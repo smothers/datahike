@@ -1011,7 +1011,7 @@
 (defn- advance-max-eid [db eid]
   (cond-> db
     (and (> eid (:max-eid db))
-         (< eid tx0))                                 ;; do not trigger advance if transaction id was referenced
+         (> eid txmax))                                 ;; do not trigger advance if transaction id was referenced
     (assoc :max-eid eid)))
 
 (defn- allocate-eid

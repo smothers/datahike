@@ -3,7 +3,12 @@
     #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
        :clj  [clojure.test :as t :refer        [is are deftest testing]])
     [datahike.core :as d]
+    [datahike.constants :refer [tx0 e0]]
     [datahike.test.core :as tdc]))
+
+(def one e0)
+(def two (inc one))
+(def three (inc two))
 
 #?(:cljs
    (def Throwable js/Error))
@@ -35,10 +40,10 @@
 
 (deftest test-unique
   (let [db (d/db-with (d/empty-db {:name { :db/unique :db.unique/value }})
-                      [[:db/add 1 :name "Ivan"]
-                       [:db/add 2 :name "Petr"]])]
+                      [[:db/add one :name "Ivan"]
+                       [:db/add two :name "Petr"]])]
     (are [tx] (thrown-with-msg? Throwable #"unique constraint" (d/db-with db tx))
-      [[:db/add 3 :name "Ivan"]]
-      [{:db/add 3 :name "Petr"}])
-    (d/db-with db [[:db/add 3 :name "Igor"]])
-    (d/db-with db [[:db/add 3 :nick "Ivan"]])))
+      [[:db/add three :name "Ivan"]]
+      [{:db/add three :name "Petr"}])
+    (d/db-with db [[:db/add three :name "Igor"]])
+    (d/db-with db [[:db/add three :nick "Ivan"]])))

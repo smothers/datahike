@@ -1,5 +1,6 @@
 (ns sandbox
-  (:require [datahike.api :as d]))
+  (:require [datahike.api :as d]
+            [datahike.migration :as m]))
 
 (comment
 
@@ -27,4 +28,23 @@
                                 {:name  "Bob", :age   35}
                                 {:name "Charlie", :age 45 :sibling [[:name "Alice"] [:name "Bob"]]}]))
 
-  (d/q '[:find ?e ?v ?t :where [?e :name ?v ?t]] @conn))
+  (d/q '[:find ?e ?a ?v ?t :where [?e ?a ?v ?t ?tx]] @conn)
+
+  (m/export-db @conn "/tmp/dh_export")
+
+  (def uri-2 "datahike:mem://sandbox-2")
+
+  (d/delete-database uri-2)
+
+  (d/create-database uri-2)
+
+
+  (def conn-2 (d/connect uri-2))
+
+  (d/transact conn-2 [{:name "foo"}])
+
+  (m/import-db conn-2 "/tmp/dh_export")
+
+  (d/q '[:find ?e ?v ?t :where [?e :name ?v ?t]] @conn-2)
+
+  )
