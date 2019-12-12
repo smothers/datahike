@@ -4,14 +4,28 @@
             [datahike.pull-api :as dp]
             [datahike.query :as dq]
             [datahike.db :as db #?@(:cljs [:refer [CurrentDB]])]
-            [datahike.impl.entity :as de])
+            [datahike.impl.entity :as de]
+            [datahike.connector :refer [IConfiguration]]
+            [clojure.spec.alpha :as s])
   #?(:clj
      (:import [datahike.db HistoricalDB AsOfDB SinceDB FilteredDB]
               [datahike.impl.entity Entity]
               [java.util Date])))
 
+
+(defn- date? [d]
+  #?(:cljs (instance? js/Date d)
+     :clj  (instance? Date d)))
+
+(s/def ::config #(satisfies? IConfiguration %))
+(s/def ::db db/db?)
+(s/def ::conn  #(instance? clojure.lang.Atom %))
+(s/def ::index #{:eavt, :aevt, :avet})
+(s/def ::date #(or (int? %) (date? %)))
+
+
 (def
-  ^{:arglists '([uri])
+  ^{:arglists '([config])
     :doc
               "Connects to a datahike database via URI or configuration. URI contains storage backend type
             and additional information for backends like database name, credentials, or
@@ -64,7 +78,7 @@
   create-database
   dc/create-database)
 
-(def ^{:arglists '([uri])
+(def ^{:arglists '([config])
        :doc      "Deletes a database at given URI."}
   delete-database
   dc/delete-database)
