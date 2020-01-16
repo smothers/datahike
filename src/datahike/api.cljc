@@ -21,7 +21,12 @@
 (s/def ::db db/db?)
 (s/def ::conn  #(instance? clojure.lang.Atom %))
 (s/def ::index #{:eavt, :aevt, :avet})
-(s/def ::date #(or (int? %) (date? %)))
+(s/def ::date (s/or :int (int? %) :dateobject (date? %)))
+(s/def ::tx-data #(contains? (methods dc/transact!) (.getClass %))) ;; works?
+(s/def ::selector array?)
+(s/def ::eid int?)
+(s/def ::eids (s/coll-of int? :kind vector? :distinct true))
+(s/def ::query #(contains? (methods q) (.getClass %)))
 
 
 (def
@@ -230,6 +235,7 @@
                (:args query-map)
                arg-list)]
     (apply dq/q query args)))
+
 (defn datoms
   "Index lookup. Returns a sequence of datoms (lazy iterator over actual DB index) which components (e, a, v) match passed arguments.
 
@@ -418,8 +424,8 @@
 
 (defn is-filtered
   "Returns `true` if this database was filtered using [[filter]], `false` otherwise."
-  [x]
-  (instance? FilteredDB x))
+  [db]
+  (instance? FilteredDB db))
 
 (defn filter
   "Returns a view over database that has same interface but only includes datoms for which the `(pred db datom)` is true. Can be applied multiple times.
@@ -440,10 +446,10 @@
       (FilteredDB. orig-db #(and (orig-pred %) (pred orig-db %))))
     (FilteredDB. db #(pred db %))))
 
-(defn- is-temporal? [x]
-  (or (instance? HistoricalDB x)
-      (instance? AsOfDB x)
-      (instance? SinceDB x)))
+(defn- is-temporal? [db]
+  (or (instance? HistoricalDB db)
+      (instance? AsOfDB db)
+      (instance? SinceDB db)))
 
 (defn with
   "Same as [[transact]], but applies to an immutable database value. Returns transaction report (see [[transact]])."
