@@ -29,4 +29,6 @@
 
   (d/q '[:find ?e ?v ?t :where [?e :name ?v ?t]] @conn)
 
+  (d/q '[:find ?e ?v ?t :where [?e :name ?v ?t] [(.isBlank ?v)]] @conn)
+
   )

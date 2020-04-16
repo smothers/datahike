@@ -12,6 +12,7 @@
                                            RulesVar SrcVar Variable]])
     [datalog.parser.impl :as dpi]
     [datalog.parser.impl.proto :as dpip]
+    [clojure.reflect :as cr]
     [datahike.pull-api :as dpa]
     [datalog.parser :refer [parse]]
     [datalog.parser.pull :as dpp])
@@ -539,11 +540,23 @@
      :clj  (when (namespace sym)
              (when-some [v (resolve sym)] @v))))
 
+(defn- resolve-java-method [method]
+  ;; very crude hack for reflection check
+  (when (contains? (->> String
+                       cr/reflect
+                       :members
+                       (map :name)
+                       (map #(symbol (str "." %)))
+                       (into #{}))
+                  method)
+    method))
+
 (defn filter-by-pred [context clause]
   (let [[[f & args]] clause
         pred (or (get built-ins f)
                  (context-resolve-val context f)
                  (resolve-sym f)
+                 (resolve-java-method f)
                  (when (nil? (rel-with-attr context f))
                    (raise "Unknown predicate '" f " in " clause
                           {:error :query/where, :form clause, :var f})))
@@ -560,6 +573,7 @@
         fun (or (get built-ins f)
                 (context-resolve-val context f)
                 (resolve-sym f)
+                (resolve-java-method f)
                 (when (nil? (rel-with-attr context f))
                   (raise "Unknown function '" f " in " clause
                          {:error :query/where, :form clause, :var f})))
