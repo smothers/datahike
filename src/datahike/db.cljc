@@ -7,12 +7,12 @@
     [datahike.index :refer [-slice -seq -count -all -persistent! -transient] :as di]
     [datahike.datom :as dd :refer [datom datom-tx datom-added datom?]]
     [datahike.constants :refer [e0 tx0 emax txmax]]
-    [datahike.tools :refer [get-time case-tree]]
+    [datahike.tools :refer [get-time case-tree raise]]
     [datahike.schema :as ds]
     [me.tonsky.persistent-sorted-set.arrays :as arrays])
-  #?(:cljs (:require-macros [datahike.db :refer [raise defrecord-updatable cond+]]
+  #?(:cljs (:require-macros [datahike.db :refer [defrecord-updatable cond+]]
                             [datahike.datom :refer [combine-cmp]]
-                            [datahike.tools :refer [case-tree]]))
+                            [datahike.tools :refer [case-tree raise]]))
   (:refer-clojure :exclude [seqable?])
   #?(:clj (:import [clojure.lang AMapEntry]
                    [java.util Date]
@@ -29,12 +29,6 @@
 (def ^:const implicit-schema {:db/ident {:db/unique :db.unique/identity}})
 
 ;; ----------------------------------------------------------------------------
-
-#?(:clj
-   (defmacro raise [& fragments]
-     (let [msgs (butlast fragments)
-           data (last fragments)]
-       `(throw (ex-info (str ~@(map (fn [m#] (if (string? m#) m# (list 'pr-str m#))) msgs)) ~data)))))
 
 (defn #?@(:clj  [^Boolean seqable?]
           :cljs [^boolean seqable?])
@@ -559,7 +553,7 @@
         filtered-tx-ids (filter-txInstant datoms since-pred db)]
     (->> datoms
          (filter datom-added)
-         (filter (fn [^Datom d] (contains? filtered-tx-ids (datom-tx d))) ))))
+         (filter (fn [^Datom d] (contains? filtered-tx-ids (datom-tx d)))))))
 
 (defn- filter-before [datoms ^Date before-date db]
   (let [before-pred (fn [^Datom d] (.before ^Date (.-v d) before-date))

@@ -3,11 +3,13 @@
             [datahike.core :as d]
             [datahike.index :as di]
             [datahike.store :as ds]
+            [datahike.config :as dc]
+            [datahike.tools :as dt]
             [hitchhiker.tree.bootstrap.konserve :as kons]
             [konserve.core :as k]
             [konserve.cache :as kc]
             [superv.async :refer [<?? S]]
-            [datahike.config :as dc]
+            [taoensso.timbre :as log]
             [clojure.spec.alpha :as s]
             [clojure.core.cache :as cache])
   (:import [java.net URI]
@@ -66,6 +68,7 @@
   (try
     (deref (transact! connection tx-data))
     (catch Exception e
+      (log/errorf "Error during transaction %s" (.getMessage e))
       (throw (.getCause e)))))
 
 (defn release [connection]
@@ -108,10 +111,11 @@
           false))))
 
   (-connect [config]
+    (log/warn "This way of configuration is deprecated. Please use the configuration described in the documentation.")
     (let [raw-store (ds/connect-store config)
           _ (when-not raw-store
-              (throw (ex-info "Backend does not exist." {:type :backend-does-not-exist
-                                                          :config config})))
+              (dt/raise "Backend does not exist." {:type :backend-does-not-exist
+                                                          :config config}))
           store (kons/add-hitchhiker-tree-handlers
                  (kc/ensure-cache
                   raw-store
@@ -119,8 +123,8 @@
           stored-db (<?? S (k/get-in store [:db]))
           _ (when-not stored-db
               (ds/release-store config store)
-              (throw (ex-info "Database does not exist." {:type :db-does-not-exist
-                                                          :config config})))
+              (dt/raise "Database does not exist." {:type :db-does-not-exist
+                                                    :config config}))
           {:keys [eavt-key aevt-key avet-key temporal-eavt-key temporal-aevt-key temporal-avet-key schema rschema config max-tx]} stored-db
           empty (db/empty-db nil :datahike.index/hitchhiker-tree :config config)]
       (d/conn-from-db
@@ -150,7 +154,7 @@
                (atom (cache/lru-cache-factory {} :threshold 1000)))
         stored-db (<?? S (k/get-in store [:db]))
         _ (when stored-db
-            (throw (ex-info "Database already exists." {:type :db-already-exists :config store-config})))
+            (dt/raise "Database already exists." {:type :db-already-exists :config store-config}))
         db-config {:schema-on-read schema-on-read
                    :temporal-index temporal-index
                    :storage store-config}
@@ -179,16 +183,59 @@
         (release conn)))))
 
   (-delete-database [config]
-    ;; TODO log deprecation notice #54
+    (log/warn "This way of configuration is deprecated. Please use the configuration described in the documentation.")
     (ds/delete-store config)))
+;;deprecation end
+
+(defn create-database
+  ([]
+   (let [store-config  (:store dc/config)
+         schema-config (:schema dc/config)
+         {:keys [initial-tx schema-on-read temporal-index]} schema-config
+         store     (kc/ensure-cache
+                    (ds/empty-store store-config)
+                    (atom (cache/lru-cache-factory {} :threshold 1000)))
+         stored-db (<?? S (k/get-in store [:db]))
+         _         (when stored-db
+                     (dt/raise "Database already exists." {:type :db-already-exists :config store-config}))
+         db-config {:schema-on-read schema-on-read
+                    :temporal-index temporal-index
+                    :storage store-config}
+         {:keys [eavt aevt avet temporal-eavt temporal-aevt temporal-avet schema rschema config max-tx]}
+         (db/empty-db
+          {:db/ident {:db/unique :db.unique/identity}}
+          (ds/scheme->index store-config)
+          :config db-config)
+         backend   (kons/->KonserveBackend store)]
+     (<?? S (k/assoc-in store [:db]
+                        (merge {:schema   schema
+                                :max-tx max-tx
+                                :rschema  rschema
+                                :config   db-config
+                                :eavt-key (di/-flush eavt backend)
+                                :aevt-key (di/-flush aevt backend)
+                                :avet-key (di/-flush avet backend)}
+                               (when temporal-index
+                                 {:temporal-eavt-key (di/-flush temporal-eavt backend)
+                                  :temporal-aevt-key (di/-flush temporal-aevt backend)
+                                  :temporal-avet-key (di/-flush temporal-avet backend)}))))
+     (ds/release-store store-config store)
+     (when initial-tx
+       (let [conn (-connect store-config)]
+         (transact conn initial-tx)
+         (release conn)))))
+  ;;deprecated
+  ([config & opts]
+   (log/warn "This way of configuration is deprecated. Please use the configuration described in the documentation.")
+   (-create-database config opts)))
 
 (defn connect
   ([]
    (let [store-config (:store dc/config)
          raw-store (ds/connect-store store-config)
          _ (when-not raw-store
-             (throw (ex-info "Backend does not exist." {:type :backend-does-not-exist
-                                                        :config dc/config})))
+             (dt/raise "Backend does not exist." {:type :backend-does-not-exist
+                                                 :config dc/config}))
          store (kons/add-hitchhiker-tree-handlers
                 (kc/ensure-cache
                  raw-store
@@ -196,8 +243,8 @@
          stored-db (<?? S (k/get-in store [:db]))
          _ (when-not stored-db
              (ds/release-store store-config store)
-             (throw (ex-info "Database does not exist." {:type :db-does-not-exist
-                                                         :config dc/config})))
+             (dt/raise "Database does not exist." {:type :db-does-not-exist
+                                                  :config dc/config}))
          {:keys [eavt-key aevt-key avet-key temporal-eavt-key temporal-aevt-key temporal-avet-key schema rschema config max-tx]} stored-db
          empty (db/empty-db nil :datahike.index/hitchhiker-tree :config config)]
      (d/conn-from-db

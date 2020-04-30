@@ -1,4 +1,6 @@
-(ns datahike.tools)
+(ns datahike.tools
+  (:require
+   [taoensso.timbre :as log]))
 
 (defn combine-hashes [x y]
   #?(:clj  (clojure.lang.Util/hashCombine x y)
@@ -21,3 +23,10 @@
 (defn get-time []
   #?(:clj (java.util.Date.)
      :cljs (js/Date.)))
+
+(defmacro raise [& fragments]
+  (let [msgs (butlast fragments)
+        data (last fragments)]
+    (list `(log/error ~@fragments)
+          `(throw #?(:clj  (ex-info (str ~@(map (fn [m#] (if (string? m#) m# (list 'pr-str m#))) msgs)) ~data)
+                     :cljs (error (str ~@(map (fn [m#] (if (string? m#) m# (list 'pr-str m#))) msgs)) ~data))))))
