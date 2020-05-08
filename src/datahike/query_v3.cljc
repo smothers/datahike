@@ -6,7 +6,7 @@
    [datahike.query :as dq]
    [datahike.lru :as lru]
    [me.tonsky.persistent-sorted-set.arrays :as da]
-   #?@(:cljs [datalog.parser.type :refer [BindColl BindIgnore BindScalar BindTuple
+   #?(:cljs [datalog.parser.type :refer [BindColl BindIgnore BindScalar BindTuple
                                           Constant DefaultSrc Pattern RulesVar SrcVar Variable
                                           Not Or And Predicate PlainSymbol]])
    [datalog.parser :refer [parse]]
@@ -60,20 +60,20 @@
        (reify
          NativeColl
          (-native-coll [_] m)
-         
+
          clojure.lang.IEditableCollection
          (asTransient [this] this)
-         
+
          clojure.lang.ITransientAssociative
          (assoc [this k v] (.put m k v) this)
-         
+
          clojure.lang.ITransientCollection
          (persistent [this] this)
-         
+
          clojure.lang.IPersistentCollection
          clojure.lang.Counted
          (count [_] (.size m))
-         
+
          clojure.lang.ILookup
          (valAt [_ k] (.get m k))
          (valAt [_ k nf] (or (.get m k) nf))))
@@ -85,18 +85,18 @@
        (reify
          NativeColl
          (-native-coll [_] l)
-         
+
          clojure.lang.IEditableCollection
          (asTransient [this] this)
-         
+
          clojure.lang.ITransientCollection
          (conj [this v] (.add l v) this)
          (persistent [this] this)
-         
+
          clojure.lang.IPersistentCollection
          clojure.lang.Counted
          (count [_] (.size l))
-         
+
          clojure.lang.IReduceInit
          (reduce [_ f s]
            (loop [i   0
@@ -109,17 +109,17 @@
        (reify
          NativeColl
          (-native-coll [_] arr)
-         
+
          IEditableCollection
          (-as-transient [this] this)
-         
+
          ITransientCollection
          (-conj! [this v] (.push arr v) this)
          (-persistent! [this] this)
-         
+
          ICounted
          (-count [_] (alength arr))
-         
+
          IReduce
          (-reduce [_ f s]
            (loop [i   0
@@ -134,21 +134,21 @@
        (reify
          NativeColl
          (-native-coll [_] set)
-         
+
          clojure.lang.IEditableCollection
          (asTransient [this] this)
-         
+
          clojure.lang.ITransientCollection
          (conj [this v] (.add set v) this)
          (persistent [this] this)
-         
+
          clojure.lang.IPersistentCollection
          clojure.lang.IPersistentSet
          (contains [_ k] (.contains set k))
 
          clojure.lang.Counted
          (count [_] (.size set))
-         
+
          clojure.lang.IReduceInit
          (reduce [_ f s]
            (let [iter (.iterator set)]
@@ -447,7 +447,7 @@
         arity       (+ arity1 arity2)
         target-idxs1 (arange 0 arity1)
         target-idxs2 (arange arity1 arity)
-        
+
         coll        (-fold rel2 ;; iterate over rel2
                       (fn [acc t2]
                         (let [tuples1 (get hash1 (key-fn2 t2))]
@@ -504,7 +504,7 @@
                 (bind! ts b s indexes))
               tuples
               (zip bindings source)))
-    
+
     :else
       (db/raise "Unknown binding form " (dpi/get-source binding)
                {:error :query/binding, :value source, :binding (dpi/get-source binding)})))
@@ -560,7 +560,7 @@
     (or (get (:sources context) symbol)
         (db/raise "Source " symbol " is not defined"
                {:error :query/where, :symbol symbol}))))
-    
+
 
 ;; Patterns
 
@@ -742,7 +742,7 @@
                         {:error :query/where
                          :form  form
                          :vars  missing}))))))
-                           
+
 
 (defn resolve-not [context clause]
   (let [{:keys [source vars clauses]} clause
@@ -875,7 +875,7 @@
     (doseq [rel (:rels context)]
       (println " " rel)))
   (println "  :consts" (:consts context) "}"))
-    
+
 
 (defn resolve-clauses [context clauses]
   (reduce (fn [context clause]
@@ -895,7 +895,7 @@
       (let [val (get consts sym)]
         (da/aset specimen i val)))))
 
-        
+
 (defn collect-rel-xf [syms-indexed rel]
   (let [sym+idx     (for [[sym i] syms-indexed
                           :when (has? (-symbols rel) sym)]

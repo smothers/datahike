@@ -1,6 +1,9 @@
 (ns datahike.index
+  (:refer-clojure :exclude [-seq -count -flush -persistent!])
   (:require [datahike.index.hitchhiker-tree :as dih]
-            [datahike.index.persistent-set :as dip])
+            [datahike.index.persistent-set :as dip]
+   #?@(:cljs [[hitchhiker.tree :refer [DataNode IndexNode]]
+              [me.tonsky.persistent-sorted-set :refer [BTSet]]]))
   #?(:clj (:import [hitchhiker.tree DataNode IndexNode]
                    [me.tonsky.persistent_sorted_set PersistentSortedSet])))
 
@@ -61,7 +64,8 @@
                (dih/-persistent! tree)))
 
 
-(extend-type PersistentSortedSet
+(extend-type #?(:clj PersistentSortedSet
+                :cljs BTSet)
   IIndex
   (-all [eavt-set]
         (dip/-all eavt-set))

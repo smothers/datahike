@@ -9,8 +9,8 @@
             [superv.async :refer [<?? S]]
             [datahike.config :as dc]
             [clojure.spec.alpha :as s]
-            [clojure.core.cache :as cache])
-  (:import [java.net URI]))
+            #?(:clj [clojure.core.cache :as cache]
+               :cljs [cljs.cache :as cache])))
 
 (s/def ::connection #(instance? clojure.lang.Atom %))
 

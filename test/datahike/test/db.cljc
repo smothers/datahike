@@ -5,7 +5,7 @@
        :clj  [clojure.test :as t :refer        [is are deftest testing]])
     [datahike.core :as d]
     [datahike.db :as db #?@(:cljs [:refer-macros [defrecord-updatable]]
-                                      :clj  [:refer [defrecord-updatable]])]))
+                            :clj  [:refer [defrecord-updatable]])]))
 
 ;;
 ;; verify that defrecord-updatable works with compiler/core macro configuration

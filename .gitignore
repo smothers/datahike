@@ -19,3 +19,4 @@ release.clj
 *.iml
 .vscode
 /.gitold/COMMIT_EDITMSG
+/.cpcache

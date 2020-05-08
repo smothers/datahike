@@ -1,6 +1,6 @@
 (ns datahike.schema
   (:require [clojure.spec.alpha :as s])
-  (:import [datahike.datom Datom]))
+  #?(:clj (:import [datahike.datom Datom])))
 
 (s/def :db.type/id #(or (= (class %) java.lang.Long) string?))
 
@@ -46,7 +46,7 @@
 (s/def ::schema-attribute #{:db/id :db/ident :db/isComponent :db/valueType :db/cardinality :db/unique :db/index :db.install/_attribute :db/doc})
 (s/def ::meta-attribute #{:db/txInstant :db/retracted})
 
-(s/def ::schema (s/keys :req [:db/ident :db/valueType :db/cardinality ]
+(s/def ::schema (s/keys :req [:db/ident :db/valueType :db/cardinality]
                         :opt [:db/id :db/unique :db/index :db.install/_attribute :db/doc]))
 
 (def required-keys #{:db/ident :db/valueType :db/cardinality})
