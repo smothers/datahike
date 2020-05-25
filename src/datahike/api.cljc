@@ -3,8 +3,8 @@
   (:require [datahike.connector :as dc]
             [datahike.pull-api :as dp]
             [datahike.query :as dq]
-            [datahike.db :as db]
-            [datahike.impl.entity :as de])
+            [datahike.db :as db #?@(:cljs [:refer [HistoricalDB AsOfDB SinceDB FilteredDB]])]
+            [datahike.impl.entity :as de #?@(:cljs [:refer [Entity]])])
   #?(:clj
      (:import [datahike.db HistoricalDB AsOfDB SinceDB FilteredDB]
               [datahike.impl.entity Entity]

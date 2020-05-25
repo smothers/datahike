@@ -2,18 +2,20 @@
   (:require [clojure.spec.alpha :as s])
   #?(:clj (:import [datahike.datom Datom])))
 
-(s/def :db.type/id #(or (= (class %) java.lang.Long) string?))
+(s/def :db.type/id #(or string?
+                        #?(:clj (= (class %) java.lang.Long)
+                           :cljs integer?)))
 
 ;; db types
-(s/def :db.type/bigdec decimal?)
+#?(:clj (s/def :db.type/bigdec decimal?))
 (s/def :db.type/bigint integer?)
 (s/def :db.type/boolean boolean?)
 (s/def :db.type/double double?)
 (s/def :db.type/float float?)
 (s/def :db.type/number number?)
-(s/def :db.type/instant #(= (class %) java.util.Date))
+(s/def :db.type/instant inst?)
 (s/def :db.type/keyword keyword?)
-(s/def :db.type/long #(= (class %) java.lang.Long))
+#?(:clj (s/def :db.type/long #(= (class %) java.lang.Long)))
 (s/def :db.type/ref :db.type/id)
 (s/def :db.type/string string?)
 (s/def :db.type/symbol symbol?)

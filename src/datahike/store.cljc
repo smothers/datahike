@@ -5,12 +5,12 @@
             [superv.async :refer [<?? S]]))
 
 (defmulti empty-store
-          "Creates an empty store"
-          {:arglists '([config])}
-          :backend)
+  "Creates an empty store"
+  {:arglists '([config])}
+  :backend)
 
 (defmethod empty-store :default [{:keys [backend]}]
-  (throw (IllegalArgumentException. (str "Can't create a store with scheme: " backend))))
+  (throw (ex-info "Can't create a store with scheme: " {:backend backend})))
 
 (defmulti delete-store
           "Deletes an existing store"
@@ -18,7 +18,7 @@
           :backend)
 
 (defmethod delete-store :default [{:keys [backend]}]
-  (throw (IllegalArgumentException. (str "Can't delete a store with scheme: " backend))))
+  (throw (ex-info "Can't delete a store with scheme: " {:backend backend})))
 
 (defmulti connect-store
           "Makes a connection to an existing store"
@@ -26,7 +26,7 @@
           :backend)
 
 (defmethod connect-store :default [{:keys [backend]}]
-  (throw (IllegalArgumentException. (str "Can't connect to store with scheme: " backend))))
+  (throw (ex-info "Can't connect to store with scheme: " {:backend backend})))
 
 (defmulti release-store
           "Releases the connection to an existing store (optional)."

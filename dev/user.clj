@@ -19,7 +19,7 @@
                         ;  :install-deps true
                         ;  :npm-deps   {:openpgp "4.10.1"}
                          :warnings   {:single-segment-namespace false}
-                         :verbose    true})
+                         :verbose    false})
 
   ;; (cljs.repl/repl env
   (pback/cljs-repl env

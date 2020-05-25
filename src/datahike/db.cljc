@@ -163,7 +163,7 @@
   ISearch
   (-search [db pattern]
     (let [[_ a _ _] pattern]
-      (search-indices eavt aevt avet pattern (indexing? db a) false)))
+      (search-indices (.-eavt db) (.-aevt db) (.-avet db) pattern (indexing? db a) false)))
 
   IIndexAccess
   (-datoms [db index-type cs]
@@ -190,7 +190,7 @@
     (when-not (indexing? db attr)
       (raise "Attribute" attr "should be marked as :db/index true" {}))
     (validate-attr attr (list '-index-range 'db attr start end) db)
-    (-slice avet
+    (-slice (.-avet db)
             (resolve-datom db nil attr start nil e0 tx0)
             (resolve-datom db nil attr end nil emax txmax)
             :avet))
@@ -217,7 +217,6 @@
        ICounted (-count [db] (count (-datoms db :eavt [])))
        IPrintWithWriter (-pr-writer [db w opts] (pr-db db w opts))
 
-       IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on FilteredDB")))
        IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on FilteredDB")))
 
        ILookup (-lookup ([_ _] (throw (js/Error. "-lookup is not supported on FilteredDB")))
@@ -341,7 +340,6 @@
        IPrintWithWriter (-pr-writer [db w opts] (pr-db db w opts))
 
        IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on HistoricalDB")))
-       IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on HistoricalDB")))
 
        ILookup (-lookup ([_ _] (throw (js/Error. "-lookup is not supported on HistoricalDB")))
                         ([_ _ _] (throw (js/Error. "-lookup is not supported on HistoricalDB"))))
@@ -427,7 +425,6 @@
        IPrintWithWriter (-pr-writer [db w opts] (pr-db db w opts))
 
        IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on AsOfDB")))
-       IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on AsOfDB")))
 
        ILookup (-lookup ([_ _] (throw (js/Error. "-lookup is not supported on AsOfDB")))
                         ([_ _ _] (throw (js/Error. "-lookup is not supported on AsOfDB"))))
@@ -507,7 +504,6 @@
        ICounted (-count [db] (count (-datoms db :eavt [])))
        IPrintWithWriter (-pr-writer [db w opts] (pr-db db w opts))
 
-       IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on SinceDB")))
        IEmptyableCollection (-empty [_] (throw (js/Error. "-empty is not supported on SinceDB")))
 
        ILookup (-lookup ([_ _] (throw (js/Error. "-lookup is not supported on SinceDB")))

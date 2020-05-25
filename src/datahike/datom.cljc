@@ -1,8 +1,10 @@
 (ns datahike.datom
   (:require  [clojure.walk]
              [clojure.data]
-             [datahike.tools :refer [combine-hashes ]]
-             [datahike.constants :refer [tx0]]))
+             [datahike.tools :refer [combine-hashes]]
+             [datahike.constants :refer [tx0]]
+             #?(:cljs [goog.array :as garray]))
+  #?(:cljs (:require-macros [datahike.datom :refer [combine-cmp]])))
 
 (declare hash-datom equiv-datom seq-datom nth-datom assoc-datom val-at-datom)
 
@@ -139,7 +141,7 @@
     :v (datom (.-e d) (.-a d) v (datom-tx d) (datom-added d))
     :tx (datom (.-e d) (.-a d) (.-v d) v (datom-added d))
     :added (datom (.-e d) (.-a d) (.-v d) (datom-tx d) v)
-    (throw (IllegalArgumentException. (str "invalid key for #datahike/Datom: " k)))))
+    (throw (ex-info "invalid key for #datahike/Datom:" {:key k}))))
 
 ;; printing and reading
 ;; #datomic/DB {:schema <map>, :datoms <vector of [e a v tx]>}
@@ -154,22 +156,8 @@
        (pr [(.-e d) (.-a d) (.-v d) (datom-tx d) (datom-added d)]))))
 
 ;; ----------------------------------------------------------------------------
-;; datom cmp macros/funcs
+;; datom cmp funcs
 ;;
-
-#?(:clj
-   (defmacro combine-cmp [& comps]
-     (loop [comps (reverse comps)
-            res (num 0)]
-       (if (not-empty comps)
-         (recur
-           (next comps)
-           `(let [c# ~(first comps)]
-              (if (== 0 c#)
-                ~res
-                c#)))
-         res))))
-
 
 (defn cmp [o1 o2]
   (if (nil? o1) 0

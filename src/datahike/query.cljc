@@ -7,8 +7,8 @@
    [me.tonsky.persistent-sorted-set.arrays :as da]
    [datahike.lru]
    [datahike.impl.entity :as de]
-   #?(:cljs [datalog.parser.type :refer [BindColl BindIgnore BindScalar BindTuple Constant
-                                         FindColl FindRel FindScalar FindTuple PlainSymbol
+   #?(:cljs [datalog.parser.type :refer [Aggregate BindColl BindIgnore BindScalar BindTuple 
+                                         Constant FindColl FindRel FindScalar FindTuple PlainSymbol Pull
                                          RulesVar SrcVar Variable]])
    [datalog.parser.impl :as dpi]
    [datalog.parser.impl.proto :as dpip]
@@ -197,21 +197,19 @@
 
 (defmulti -lesser?
           {:arglists '([value & more])}
-          (fn [value & more] (class value)))
+          (fn [value & more] (type value)))
 
 (defmethod -lesser? java.util.Date [^Date d0 ^Date d1]
-  #?(:clj  (.before ^Date d0 ^Date d1)
-     :cljs (< d0 d1)))
+  #?(:clj  (.before ^Date d0 ^Date d1)))
 
 (defmethod -lesser? :default [value & more]
   (apply < value more))
 
 (defmulti -greater? {:arglists '([value & more])}
-  (fn [value & more] (class value)))
+  (fn [value & more] (type value)))
 
 (defmethod -greater? java.util.Date [^Date d0 ^Date d1]
-  #?(:clj  (.after ^Date d0 ^Date d1)
-     :cljs (> d0 d1)))
+  #?(:clj  (.after ^Date d0 ^Date d1)))
 
 (defmethod -greater? :default [value & more]
   (apply > value more))

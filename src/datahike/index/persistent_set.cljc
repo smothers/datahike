@@ -2,6 +2,7 @@
   (:require [me.tonsky.persistent-sorted-set :as set]
             [me.tonsky.persistent-sorted-set.arrays :as arrays]
             [datahike.datom :as dd])
+  (:refer-clojure :exclude [-seq -count -flush -persistent!])
   #?(:clj (:import [datahike.datom Datom])))
 
 (def -slice set/slice)
