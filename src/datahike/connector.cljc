@@ -26,8 +26,8 @@
 (defmethod transact! clojure.lang.PersistentArrayMap
   [connection {:keys [tx-data]}]
   {:pre [(d/conn? connection)]}
-  (future
-    (locking connection
+  ;; (future
+  ;;   (locking connection
       (let [{:keys [db-after] :as tx-report} @(d/transact connection tx-data)
             {:keys [eavt aevt avet temporal-eavt temporal-aevt temporal-avet schema rschema config max-tx]} db-after
             store (:store @connection)
@@ -59,7 +59,7 @@
                              :temporal-eavt temporal-eavt-flushed
                              :temporal-aevt temporal-aevt-flushed
                              :temporal-avet temporal-avet-flushed))
-        tx-report))))
+        tx-report))
 
 (defn transact [connection tx-data]
   (try
